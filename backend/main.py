@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 
-app = FastAPI()
+from app.api.router import api_router
 
+app = FastAPI(
+    title="Enterprise Knowledge Assistant API",
+    version="1.0.0"
+)
 
-@app.get("/")
-def home():
-    return {
-        "message": "Welcome to Enterprise Knowledge Assistant API"
-    }
+app.include_router(api_router)
