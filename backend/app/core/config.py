@@ -16,5 +16,12 @@ class Settings(BaseSettings):
         extra="ignore"
     )
 
+    DATABASE_URL: str
+    DATABASE_HOST: str
+    DATABASE_PORT: int
+    DATABASE_NAME: str
+    DATABASE_USER: str
+    DATABASE_PASSWORD: str
+
 
 settings = Settings()
