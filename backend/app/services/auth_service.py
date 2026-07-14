@@ -7,11 +7,7 @@ from app.core.security import (
 )
 from app.database.models.user import User
 from app.repositories.user_repository import UserRepository
-from app.schemas.auth_schema import (
-    TokenResponse,
-    UserLogin,
-    UserRegister,
-)
+from app.schemas.auth_schema import UserRegister
 
 
 class AuthService:
@@ -36,20 +32,13 @@ class AuthService:
 
         return user
 
-    def login(self, login_data: UserLogin) -> TokenResponse:
-        user = self.repository.get_by_email(login_data.email)
+    def login(self, email: str, password: str) -> str:
+        user = self.repository.get_by_email(email)
 
         if user is None:
             raise ValueError("Invalid email or password")
 
-        if not verify_password(
-            login_data.password,
-            user.hashed_password,
-        ):
+        if not verify_password(password, user.hashed_password):
             raise ValueError("Invalid email or password")
 
-        access_token = create_access_token(str(user.id))
-
-        return TokenResponse(
-            access_token=access_token,
-        )
+        return create_access_token(str(user.id))
