@@ -44,6 +44,11 @@ class Settings(BaseSettings):
     GOOGLE_API_KEY: str
 
 
+    EMBEDDING_MODEL: str = "gemini-embedding-001"
+
+    CHAT_MODEL: str = "gemini-3.5-flash"
+
+
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
