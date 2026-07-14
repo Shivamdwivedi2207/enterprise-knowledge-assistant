@@ -6,7 +6,7 @@ from sqlalchemy import engine_from_config, pool
 
 from app.core.config import settings
 from app.database.base import Base
-from app.database.models.user import User  
+from app.database.models import *  
 # Import all models here
 
 

@@ -5,6 +5,7 @@ import uuid
 from sqlalchemy import Boolean, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import relationship
 
 from app.database.base import Base, TimestampMixin
 
@@ -51,4 +52,10 @@ class User(Base, TimestampMixin):
         Boolean,
         default=False,
         nullable=False,
+    )
+
+    documents = relationship(
+    "Document",
+    back_populates="owner",
+    cascade="all, delete-orphan",
     )
