@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.database.models.document import Document
 from app.database.models.user import User
 from app.repositories.document_repository import DocumentRepository
-
+from app.services.indexing_service import IndexingService
 
 class DocumentService:
     MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
@@ -62,5 +62,8 @@ class DocumentService:
         self.repository.add(document)
         self.repository.commit()
         self.repository.refresh(document)
+
+        # Automatically index the document
+        IndexingService().index_document(document)
 
         return document
