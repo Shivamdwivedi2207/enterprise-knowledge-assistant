@@ -25,3 +25,6 @@ dist/
 
 # Node
 node_modules/
+
+# stored documents
+backend/storage/
