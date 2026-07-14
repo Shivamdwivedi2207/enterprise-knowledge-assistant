@@ -38,6 +38,11 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    # ========================
+    # GOOGLE_API_KEY
+    # ========================
+    GOOGLE_API_KEY: str
+
 
 @lru_cache
 def get_settings() -> Settings:
