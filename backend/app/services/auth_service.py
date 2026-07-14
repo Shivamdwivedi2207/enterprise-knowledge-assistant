@@ -1,4 +1,3 @@
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.security import (
@@ -7,6 +6,7 @@ from app.core.security import (
     verify_password,
 )
 from app.database.models.user import User
+from app.repositories.user_repository import UserRepository
 from app.schemas.auth_schema import (
     TokenResponse,
     UserLogin,
@@ -16,12 +16,10 @@ from app.schemas.auth_schema import (
 
 class AuthService:
     def __init__(self, db: Session):
-        self.db = db
+        self.repository = UserRepository(db)
 
     def register(self, user_data: UserRegister) -> User:
-        existing_user = self.db.scalar(
-            select(User).where(User.email == user_data.email)
-        )
+        existing_user = self.repository.get_by_email(user_data.email)
 
         if existing_user:
             raise ValueError("Email already registered")
@@ -32,18 +30,16 @@ class AuthService:
             hashed_password=hash_password(user_data.password),
         )
 
-        self.db.add(user)
-        self.db.commit()
-        self.db.refresh(user)
+        self.repository.add(user)
+        self.repository.commit()
+        self.repository.refresh(user)
 
         return user
 
     def login(self, login_data: UserLogin) -> TokenResponse:
-        user = self.db.scalar(
-            select(User).where(User.email == login_data.email)
-        )
+        user = self.repository.get_by_email(login_data.email)
 
-        if not user:
+        if user is None:
             raise ValueError("Invalid email or password")
 
         if not verify_password(
@@ -52,8 +48,8 @@ class AuthService:
         ):
             raise ValueError("Invalid email or password")
 
-        token = create_access_token(str(user.id))
+        access_token = create_access_token(str(user.id))
 
         return TokenResponse(
-            access_token=token,
+            access_token=access_token,
         )
