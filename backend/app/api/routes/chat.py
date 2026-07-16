@@ -25,12 +25,13 @@ def chat(
     current_user: User = Depends(get_current_user),
 ):
 
-    answer = service.ask(
+    result = service.ask(
         db=db,
         question=request.question,
         owner_id=str(current_user.id),
     )
 
     return ChatResponse(
-        answer=answer,
+        answer=result["answer"],
+        sources=result["sources"],
     )

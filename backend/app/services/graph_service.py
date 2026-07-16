@@ -17,16 +17,19 @@ class GraphService:
     ) -> str:
 
         state = {
-            "question": question,
-            "owner_id": owner_id,
-            "history": "",
-            "context": "",
-            "answer": "",
-        }
+        "question": question,
+        "owner_id": owner_id,
+        "history": "",
+        "context": "",
+        "answer": "",
+        "sources": [],
+    }
 
         result = graph.invoke(state)
 
         answer = result["answer"]
+
+        sources = result["sources"]
 
         self.repository.create(
             db=db,
@@ -35,4 +38,7 @@ class GraphService:
             answer=answer,
         )
 
-        return answer
+        return {
+            "answer": answer,
+            "sources": sources,
+        }
