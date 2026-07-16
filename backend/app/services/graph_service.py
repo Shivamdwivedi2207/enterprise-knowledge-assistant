@@ -42,3 +42,28 @@ class GraphService:
             "answer": answer,
             "sources": sources,
         }
+    
+    def ask_stream(
+        self,
+        question: str,
+        owner_id: str,
+    ):
+        """
+        Stream the answer token by token.
+        """
+
+        state = {
+            "question": question,
+            "owner_id": owner_id,
+            "history": "",
+            "context": "",
+            "answer": "",
+            "sources": [],
+        }
+
+        result = graph.invoke(state)
+
+        answer = result["answer"]
+
+        for word in answer.split():
+            yield word + " "
