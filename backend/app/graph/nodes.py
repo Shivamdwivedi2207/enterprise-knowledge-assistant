@@ -46,7 +46,8 @@ def history_node(state: GraphState) -> GraphState:
 
 def retrieve_node(state: GraphState) -> GraphState:
     """
-    Retrieve relevant chunks from ChromaDB.
+    Retrieve relevant chunks and store both
+    context and citation metadata.
     """
 
     chunks = retriever.retrieve(
@@ -54,10 +55,30 @@ def retrieve_node(state: GraphState) -> GraphState:
         owner_id=state["owner_id"],
     )
 
-    state["context"] = "\n\n".join(chunks)
+    if not chunks:
+        state["context"] = ""
+        state["sources"] = []
+        return state
+
+    # Context sent to Gemini
+    context = "\n\n".join(
+        chunk["text"] for chunk in chunks
+    )
+
+    # Metadata kept for citations
+    sources = [
+        {
+            "filename": chunk["filename"],
+            "chunk_index": chunk["chunk_index"],
+            "document_id": chunk["document_id"],
+        }
+        for chunk in chunks
+    ]
+
+    state["context"] = context
+    state["sources"] = sources
 
     return state
-
 
 def generate_node(state: GraphState) -> GraphState:
     """

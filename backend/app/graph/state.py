@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import Any, TypedDict
 
 
 class GraphState(TypedDict):
@@ -7,3 +7,4 @@ class GraphState(TypedDict):
     history: str
     context: str
     answer: str
+    sources: list[dict[str, Any]]
