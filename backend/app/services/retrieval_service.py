@@ -12,9 +12,9 @@ class RetrievalService:
         query: str,
         owner_id: str,
         top_k: int = 5,
-    ) -> list[str]:
+    ):
         """
-        Retrieve the most relevant chunks for a user's query.
+        Retrieve relevant chunks along with their metadata.
         """
 
         query_embedding = self.embedding_service.embed_query(query)
@@ -25,9 +25,19 @@ class RetrievalService:
             where={"owner_id": owner_id},
         )
 
-        documents = results.get("documents", [])
+        documents = results.get("documents", [[]])[0]
+        metadatas = results.get("metadatas", [[]])[0]
 
-        if not documents:
-            return []
+        retrieved_chunks = []
 
-        return documents[0]
+        for doc, meta in zip(documents, metadatas):
+            retrieved_chunks.append(
+                {
+                    "text": doc,
+                    "filename": meta.get("filename", "Unknown"),
+                    "chunk_index": meta.get("chunk_index", -1),
+                    "document_id": meta.get("document_id"),
+                }
+            )
+
+        return retrieved_chunks
