@@ -6,7 +6,7 @@ from app.core.config import settings
 class EmbeddingService:
     def __init__(self):
         self.embedding_model = GoogleGenerativeAIEmbeddings(
-            model=settings.EMBEDDING_MODEL,
+            model=settings.GEMINI_EMBEDDING_MODEL,
             google_api_key=settings.GOOGLE_API_KEY,
         )
 

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.core.security import get_current_user
@@ -34,4 +35,19 @@ def chat(
     return ChatResponse(
         answer=result["answer"],
         sources=result["sources"],
+    )
+
+@router.post("/stream")
+def stream_chat(
+    request: ChatRequest,
+    current_user: User = Depends(get_current_user),
+):
+    generator = service.ask_stream(
+        question=request.question,
+        owner_id=str(current_user.id),
+    )
+
+    return StreamingResponse(
+        generator,
+        media_type="text/plain",
     )

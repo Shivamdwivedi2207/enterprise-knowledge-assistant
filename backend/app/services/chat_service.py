@@ -47,7 +47,7 @@ Question:
 """
 
         response = self.client.models.generate_content(
-            model=settings.CHAT_MODEL,
+            model=settings.GEMINI_CHAT_MODEL,
             contents=prompt,
         )
 

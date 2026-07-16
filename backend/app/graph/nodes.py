@@ -1,4 +1,4 @@
-from google import genai
+from app.services.gemini_service import GeminiService
 
 from app.core.config import settings
 from app.graph.prompts import RAG_PROMPT
@@ -8,17 +8,21 @@ from app.database.session import SessionLocal
 from app.repositories.chat_history_repository import ChatHistoryRepository
 
 
+# ==========================
+# Initialize Services
+# ==========================
+gemini = GeminiService()
 repository = ChatHistoryRepository()
 retriever = RetrievalService()
 
 
-client = genai.Client(
-    api_key=settings.GOOGLE_API_KEY
-)
+# ==========================
+# History Node
+# ==========================
 
 def history_node(state: GraphState) -> GraphState:
     """
-    Load recent chat history.
+    Load recent chat history from PostgreSQL.
     """
 
     db = SessionLocal()
@@ -44,10 +48,14 @@ def history_node(state: GraphState) -> GraphState:
     return state
 
 
+# ==========================
+# Retrieval Node
+# ==========================
+
 def retrieve_node(state: GraphState) -> GraphState:
     """
-    Retrieve relevant chunks and store both
-    context and citation metadata.
+    Retrieve relevant chunks from ChromaDB.
+    Store both context and citation metadata.
     """
 
     chunks = retriever.retrieve(
@@ -61,12 +69,12 @@ def retrieve_node(state: GraphState) -> GraphState:
         return state
 
     # Context sent to Gemini
-    context = "\n\n".join(
+    state["context"] = "\n\n".join(
         chunk["text"] for chunk in chunks
     )
 
-    # Metadata kept for citations
-    sources = [
+    # Metadata for citations
+    state["sources"] = [
         {
             "filename": chunk["filename"],
             "chunk_index": chunk["chunk_index"],
@@ -75,14 +83,16 @@ def retrieve_node(state: GraphState) -> GraphState:
         for chunk in chunks
     ]
 
-    state["context"] = context
-    state["sources"] = sources
-
     return state
+
+
+# ==========================
+# Generate Node
+# ==========================
 
 def generate_node(state: GraphState) -> GraphState:
     """
-    Generate answer using Gemini.
+    Generate the final answer using Gemini.
     """
 
     prompt = RAG_PROMPT.format(
@@ -91,11 +101,15 @@ def generate_node(state: GraphState) -> GraphState:
         question=state["question"],
     )
 
-    response = client.models.generate_content(
-        model=settings.CHAT_MODEL,
-        contents=prompt,
-    )
+    try:
+        state["answer"] = gemini.generate(prompt)
 
-    state["answer"] = response.text
+    except Exception as e:
+        print(f"Gemini Error: {e}")
+
+        state["answer"] = (
+            "Sorry, I'm currently unable to generate a response. "
+            "Please try again in a few moments."
+        )
 
     return state

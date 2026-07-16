@@ -44,9 +44,11 @@ class Settings(BaseSettings):
     GOOGLE_API_KEY: str
 
 
-    EMBEDDING_MODEL: str = "gemini-embedding-001"
+    GEMINI_EMBEDDING_MODEL: str = "gemini-embedding-001"
 
-    CHAT_MODEL: str = "gemini-3.5-flash"
+    GEMINI_PRIMARY_MODEL: str = "gemini-3.5-flash"
+
+    GEMINI_FALLBACK_MODEL: str = "gemini-3.1-flash-lite"
 
 
 @lru_cache
