@@ -50,6 +50,16 @@ class Settings(BaseSettings):
 
     GEMINI_FALLBACK_MODEL: str = "gemini-3.1-flash-lite"
 
+    CHROMA_DB_PATH: str = "storage/chroma_db"
+    CHROMA_COLLECTION_NAME: str = "documents"
+    # N8N URLs
+    N8N_WEBHOOK_URL: str 
+
+    N8N_GMAIL_WEBHOOK_URL: str 
+
+    N8N_CALENDAR_WEBHOOK_URL: str 
+
+    N8N_NOTION_WEBHOOK_URL: str 
 
 @lru_cache
 def get_settings() -> Settings:

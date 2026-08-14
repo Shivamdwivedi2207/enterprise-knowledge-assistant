@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from app.database.models.chat_history import ChatHistory
@@ -12,9 +14,8 @@ class ChatHistoryRepository:
         question: str,
         answer: str,
     ) -> ChatHistory:
-
         chat = ChatHistory(
-            owner_id=owner_id,
+            owner_id=UUID(str(owner_id)),
             question=question,
             answer=answer,
         )
@@ -31,11 +32,22 @@ class ChatHistoryRepository:
         owner_id: str,
         limit: int = 10,
     ) -> list[ChatHistory]:
+        """
+        Return the user's most recent chat records.
+
+        Results are returned newest first. The history node
+        reverses them before building the conversation text.
+        """
 
         return (
             db.query(ChatHistory)
-            .filter(ChatHistory.owner_id == owner_id)
-            .order_by(ChatHistory.created_at.desc())
+            .filter(
+                ChatHistory.owner_id
+                == UUID(str(owner_id))
+            )
+            .order_by(
+                ChatHistory.created_at.desc()
+            )
             .limit(limit)
             .all()
         )

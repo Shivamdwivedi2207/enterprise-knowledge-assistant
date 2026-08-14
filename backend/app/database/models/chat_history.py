@@ -18,7 +18,10 @@ class ChatHistory(Base):
 
     owner_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("users.id"),
+        ForeignKey(
+            "users.id",
+            ondelete="CASCADE",
+        ),
         nullable=False,
     )
 
@@ -35,4 +38,5 @@ class ChatHistory(Base):
     created_at = Column(
         DateTime(timezone=True),
         server_default=func.now(),
+        nullable=False,
     )

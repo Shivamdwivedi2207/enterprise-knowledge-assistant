@@ -1,14 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    status,
+)
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
 from app.schemas.auth_schema import (
     TokenResponse,
-    UserRegister,
-    UserResponse,
+    UserLogin,
 )
 from app.services.auth_service import AuthService
+
 
 router = APIRouter(
     prefix="/auth",
@@ -16,34 +21,65 @@ router = APIRouter(
 )
 
 
-@router.post(
-    "/register",
-    response_model=UserResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-def register(
-    user: UserRegister,
-    db: Session = Depends(get_db),
-):
-    service = AuthService(db)
-
-    try:
-        return service.register(user)
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e),
-        )
-
+# =========================================================
+# Login — React Frontend
+# =========================================================
 
 @router.post(
     "/login",
     response_model=TokenResponse,
 )
 def login(
+    request: UserLogin,
+    db: Session = Depends(get_db),
+):
+    """
+    JSON login endpoint used by the React frontend.
+
+    Public registration is intentionally disabled.
+    Employee accounts are created by administrators.
+    """
+
+    service = AuthService(db)
+
+    try:
+        access_token = service.login(
+            email=request.email,
+            password=request.password,
+        )
+
+        return TokenResponse(
+            access_token=access_token,
+        )
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=(
+                status.HTTP_401_UNAUTHORIZED
+            ),
+            detail=str(error),
+        ) from error
+
+
+# =========================================================
+# Login — Swagger OAuth2
+# =========================================================
+
+@router.post(
+    "/swagger-login",
+    response_model=TokenResponse,
+)
+def swagger_login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):
+    """
+    Form-data login endpoint used by Swagger OAuth2.
+
+    Enter the user's email address in the
+    Swagger username field.
+    """
+
     service = AuthService(db)
 
     try:
@@ -56,8 +92,13 @@ def login(
             access_token=access_token,
         )
 
-    except ValueError as e:
+    except ValueError as error:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(e),
-        )
+            status_code=(
+                status.HTTP_401_UNAUTHORIZED
+            ),
+            detail=str(error),
+            headers={
+                "WWW-Authenticate": "Bearer",
+            },
+        ) from error
